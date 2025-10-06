@@ -1,164 +1,189 @@
 openapi: 3.1.0
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
-info:
-  title: Orquestrador de IAs
-  version: "1.2.1"
+info: { title: AI Orchestrator Actions, version: "1.5.0" }
 servers:
-  - url: https://assistentepessoalia-zmu0.onrender.com
+  - url: https://assistentepessoalia.onrender.com
 paths:
   /api/health:
-    get:
-      operationId: health
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  ok: { type: boolean }
+    get: { operationId: health, summary: Health, responses: { "200": { description: OK } } }
+  /health:
+    get: { operationId: healthCompat, summary: Health compat, responses: { "200": { description: OK } } }
+
   /api/repo/ensure-structure:
     post:
       operationId: ensureStructure
       security: [{ ApiKeyAuth: [] }]
       requestBody:
         required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [scope]
-              properties:
-                scope: { type: string, enum: [global, demand] }
-                demandSlug: { type: string }
-                version: { type: integer, minimum: 1 }
-                title: { type: string }
-                dryRun: { type: boolean }
-      responses:
-        "200":
-          description: Structure ensured
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  ok: { type: boolean }
-                  paths: { type: object }
+        content: { application/json: { schema:
+          { type: object, required: [scope], properties:
+            { scope: { type: string, enum: [global, demand] }, demandSlug: { type: string }, version: { type: integer, minimum: 1 }, title: { type: string }, dryRun: { type: boolean } } } } }
+      responses: { "200": { description: OK } }
+
   /api/demand/init:
     post:
       operationId: initDemand
       security: [{ ApiKeyAuth: [] }]
       requestBody:
         required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [slug]
-              properties:
-                slug: { type: string }
-                title: { type: string }
-                version: { type: integer, minimum: 1, default: 1 }
-                dryRun: { type: boolean }
-      responses:
-        "200":
-          description: Demand initialized
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  ok: { type: boolean }
-                  paths: { type: object }
+        content: { application/json: { schema:
+          { type: object, required: [slug], properties:
+            { slug: { type: string }, title: { type: string }, version: { type: integer, minimum: 1, default: 1 }, dryRun: { type: boolean } } } } }
+      responses: { "200": { description: OK } }
+
   /api/knowledge/save:
     post:
       operationId: saveKnowledge
       security: [{ ApiKeyAuth: [] }]
       requestBody:
         required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [scope, filename, content]
-              properties:
-                scope: { type: string, enum: [global, demand] }
-                demandSlug: { type: string }
-                version: { type: integer, minimum: 1 }
-                filename: { type: string }
-                content: {}
-                area: { type: string, enum: [notes, inputs, outputs], default: notes }
-      responses:
-        "200":
-          description: Saved
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  ok: { type: boolean }
-                  path: { type: string }
-                  urls:
-                    type: object
-                    properties:
-                      html_url: { type: string }
-                      raw_url: { type: string }
+        content: { application/json: { schema:
+          { type: object, required: [scope, filename, content], properties:
+            { scope: { type: string, enum: [global, demand] }, demandSlug: { type: string }, version: { type: integer, minimum: 1 },
+              filename: { type: string }, content: {}, area: { type: string, enum: [notes, inputs, outputs], default: notes } } } } }
+      responses: { "200": { description: OK } }
+
   /api/file/save-base64:
     post:
       operationId: saveFileBase64
       security: [{ ApiKeyAuth: [] }]
       requestBody:
         required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [scope, filename, base64]
-              properties:
-                scope: { type: string, enum: [global, demand] }
-                demandSlug: { type: string }
-                version: { type: integer, minimum: 1 }
-                area: { type: string, enum: [inputs, outputs], default: inputs }
-                filename: { type: string }
-                base64: { type: string }
-      responses:
-        "200":
-          description: Saved
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  ok: { type: boolean }
-                  path: { type: string }
-                  urls:
-                    type: object
-                    properties:
-                      html_url: { type: string }
-                      raw_url: { type: string }
+        content: { application/json: { schema:
+          { type: object, required: [scope, filename, base64], properties:
+            { scope: { type: string, enum: [global, demand] }, demandSlug: { type: string }, version: { type: integer, minimum: 1 },
+              area: { type: string, enum: [inputs, outputs], default: inputs }, filename: { type: string }, base64: { type: string } } } } }
+      responses: { "200": { description: OK } }
+
   /api/url/canonicalize:
     get:
       operationId: canonicalize
-      parameters:
-        - in: query
-          name: path
-          required: true
-          schema: { type: string }
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  path: { type: string }
-                  url: { type: string }
+      parameters: [ { in: query, name: path, required: true, schema: { type: string } } ]
+      responses: { "200": { description: OK } }
+
+  /api/orch/demand/new:
+    post:
+      operationId: novaDemanda
+      security: [{ ApiKeyAuth: [] }]
+      requestBody:
+        required: true
+        content: { application/json: { schema:
+          { type: object, required: [title], properties:
+            { title: { type: string }, description: { type: string }, tags: { type: array, items: { type: string } },
+              owner: { type: string }, repoTarget: { type: object, properties:
+                { kind: { type: string, enum: [gitlab, github, none], default: none }, projectId: { type: string }, ownerRepo: { type: string } } } } } } }
+      responses: { "200": { description: OK } }
+
+  /api/orch/demand:
+    get: { operationId: listarDemandas, security: [{ ApiKeyAuth: [] }], responses: { "200": { description: OK } } }
+
+  /api/orch/demand/{id}:
+    get:
+      operationId: lerDemanda
+      security: [{ ApiKeyAuth: [] }]
+      parameters: [ { in: path, name: id, required: true, schema: { type: string } } ]
+      responses: { "200": { description: OK } }
+
+  /api/orch/prompt/compose:
+    post:
+      operationId: comporPrompt
+      security: [{ ApiKeyAuth: [] }]
+      requestBody:
+        required: true
+        content: { application/json: { schema:
+          { type: object, required: [taskType], properties:
+            { taskType: { type: string, enum: [doc,presentation,cost-review,plan-review,code,browser-test,image,video,summary] },
+              context: { type: object }, constraints: { type: object }, style: { type: object },
+              outputFormat: { type: string, enum: [markdown,json,ppt-md,plan-md,prompt], default: markdown } } } } }
+      responses: { "200": { description: OK } }
+
+  /api/orch/step/append:
+    post:
+      operationId: adicionarPasso
+      security: [{ ApiKeyAuth: [] }]
+      requestBody:
+        required: true
+        content: { application/json: { schema:
+          { type: object, required: [demandId, title, kind, input], properties:
+            { demandId: { type: string }, title: { type: string },
+              kind: { type: string, enum: [research,code,browser-test,doc,presentation,cost-review,plan-review,image,video,ops,summary] },
+              input: { type: object },
+              acceptance: { type: object, properties: { mustInclude: { type: array, items: { type: string } }, maxTokens: { type: integer } } },
+              routeHint: { type: string, enum: [cheap,balanced,best,force-openai,force-grok,force-genspark,force-manus], default: balanced },
+              fallbackProviders: { type: array, items: { type: string, enum: [openai,grok,genspark,manus] } },
+              realign: { type: object, properties: { mode: { type: string, enum: [switch,same,both], default: both }, revisedInput: { type: object }, maxSame: { type: integer, default: 1 } } },
+              providers: { type: object } } } } }
+      responses: { "200": { description: OK } }
+
+  /api/orch/auto/run:
+    post:
+      operationId: autoRunPlano
+      security: [{ ApiKeyAuth: [] }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { type: object, required: [demandId, plan, providers] } } }
+      responses: { "200": { description: OK } }
+
+  /api/orch/fanout:
+    post:
+      operationId: fanout
+      security: [{ ApiKeyAuth: [] }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { type: object, required: [demandId, title, branches, providers] } } }
+      responses: { "200": { description: OK } }
+
+  /api/orch/cross-review:
+    post:
+      operationId: crossReview
+      security: [{ ApiKeyAuth: [] }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { type: object, required: [demandId, title, producer, reviewers, providers] } } }
+      responses: { "200": { description: OK } }
+
+  /api/integrations/save-doc:
+    post:
+      operationId: salvarDocumento
+      security: [{ ApiKeyAuth: [] }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { type: object, required: [demandId, target, path, content, tokens] } } }
+      responses: { "200": { description: OK } }
+
+  /api/integrations/webhook:
+    post:
+      operationId: chamarWebhook
+      security: [{ ApiKeyAuth: [] }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { type: object, required: [url] } } }
+      responses: { "200": { description: OK } }
+
+  /api/credentials/put:
+    post:
+      operationId: salvarCredenciaisCriptografadas
+      security: [{ ApiKeyAuth: [] }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { type: object, required: [passphrase, secrets, target, path, tokens] } } }
+      responses: { "200": { description: OK } }
+
+  /api/credentials/get:
+    post:
+      operationId: lerCredenciaisCriptografadas
+      security: [{ ApiKeyAuth: [] }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { type: object, required: [passphrase, target, path, tokens] } } }
+      responses: { "200": { description: OK } }
+
+  /privacy:
+    get: { operationId: privacy, responses: { "200": { description: OK } } }
+  /terms:
+    get: { operationId: terms, responses: { "200": { description: OK } } }
+
 components:
   securitySchemes:
-    ApiKeyAuth:
-      type: apiKey
-      in: header
-      name: x-api-key
+    ApiKeyAuth: { type: apiKey, in: header, name: x-api-key }
   schemas: {}
