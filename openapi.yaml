@@ -1,6 +1,6 @@
 openapi: 3.1.0
 info: { title: AI Orchestrator Actions, version: "1.5.0" }
-servers: [ { url: https://assistentepessoalia.onrender.com } ]
+servers: [ { url: https://assistentepessoalia-zmu0.onrender.com } ]
 
 paths:
   /health:
