@@ -1,15 +1,23 @@
-openapi: 3.0.3
+openapi: 3.1.0
+jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
 info:
   title: Orquestrador de IAs
-  version: "1.2.0"
+  version: "1.2.1"
 servers:
-  - url: https://assistentepessoalia-zmu0.onrender.com
+  - url: https://assistentepessoalia.onrender.com
 paths:
   /api/health:
     get:
       operationId: health
       responses:
-        '200': { description: OK }
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
   /api/repo/ensure-structure:
     post:
       operationId: ensureStructure
@@ -28,7 +36,15 @@ paths:
                 title: { type: string }
                 dryRun: { type: boolean }
       responses:
-        '200': { description: Estrutura criada }
+        "200":
+          description: Structure ensured
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+                  paths: { type: object }
   /api/demand/init:
     post:
       operationId: initDemand
@@ -46,7 +62,15 @@ paths:
                 version: { type: integer, minimum: 1, default: 1 }
                 dryRun: { type: boolean }
       responses:
-        '200': { description: Demanda inicializada }
+        "200":
+          description: Demand initialized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+                  paths: { type: object }
   /api/knowledge/save:
     post:
       operationId: saveKnowledge
@@ -66,7 +90,20 @@ paths:
                 content: {}
                 area: { type: string, enum: [notes, inputs, outputs], default: notes }
       responses:
-        '200': { description: Salvo }
+        "200":
+          description: Saved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+                  path: { type: string }
+                  urls:
+                    type: object
+                    properties:
+                      html_url: { type: string }
+                      raw_url: { type: string }
   /api/file/save-base64:
     post:
       operationId: saveFileBase64
@@ -86,19 +123,42 @@ paths:
                 filename: { type: string }
                 base64: { type: string }
       responses:
-        '200': { description: Salvo }
+        "200":
+          description: Saved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+                  path: { type: string }
+                  urls:
+                    type: object
+                    properties:
+                      html_url: { type: string }
+                      raw_url: { type: string }
   /api/url/canonicalize:
     get:
       operationId: canonicalize
       parameters:
         - in: query
           name: path
+          required: true
           schema: { type: string }
       responses:
-        '200': { description: OK }
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  path: { type: string }
+                  url: { type: string }
 components:
   securitySchemes:
     ApiKeyAuth:
       type: apiKey
       in: header
       name: x-api-key
+  schemas: {}
