@@ -1,0 +1,395 @@
+openapi: 3.1.0
+info: { title: AI Orchestrator Actions, version: "1.5.0" }
+servers: [ { url: https://assistentepessoalia.onrender.com } ]
+
+paths:
+  /health:
+    get:
+      operationId: health
+      summary: Health
+      responses: { "200": { description: OK } }
+
+  /allowed-origins:
+    get:
+      operationId: allowed
+      summary: Lista de allowed domains
+      responses: { "200": { description: OK } }
+
+  /api/orch/demand/new:
+    post:
+      operationId: novaDemanda
+      summary: Cria demanda/projeto
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title]
+              properties:
+                title: { type: string, example: "2025-10-06 - Plano X - Brasília" }
+                description: { type: string }
+                tags: { type: array, items: { type: string } }
+                owner: { type: string, example: "usuario@empresa.com" }
+                repoTarget:
+                  type: object
+                  properties:
+                    kind: { type: string, enum: [gitlab, github, none], default: none }
+                    projectId: { type: string, example: "12345678" }
+                    ownerRepo: { type: string, example: "org/repo" }
+      responses: { "200": { description: OK } }
+
+  /api/orch/demand:
+    get:
+      operationId: listarDemandas
+      summary: Lista metadados das demandas
+      responses: { "200": { description: OK } }
+
+  /api/orch/demand/{id}:
+    get:
+      operationId: lerDemanda
+      summary: Lê estado completo da demanda
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses: { "200": { description: OK } }
+
+  /api/orch/prompt/compose:
+    post:
+      operationId: comporPrompt
+      summary: Prompt rígido (planejar, hiperfracionar, testar, dados reais, sem transferência direta)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [taskType]
+              properties:
+                taskType: { type: string, enum: [doc,presentation,cost-review,plan-review,code,browser-test,image,video,summary] }
+                context: { type: object }
+                constraints: { type: object }
+                style: { type: object }
+                outputFormat: { type: string, enum: [markdown,json,ppt-md,plan-md,prompt], default: markdown }
+      responses: { "200": { description: OK } }
+
+  /api/orch/step/append:
+    post:
+      operationId: adicionarPasso
+      summary: Passo unitário com validação, realinhamento (mesma IA) e fallback (outra IA)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [demandId, title, kind, input]
+              properties:
+                demandId: { type: string }
+                title: { type: string }
+                kind: { type: string, enum: [research,code,browser-test,doc,presentation,cost-review,plan-review,image,video,ops,summary] }
+                input: { type: object }
+                acceptance:
+                  type: object
+                  properties:
+                    mustInclude: { type: array, items: { type: string } }
+                    maxTokens: { type: integer }
+                routeHint: { type: string, enum: [cheap,balanced,best,force-openai,force-grok,force-genspark,force-manus], default: balanced }
+                fallbackProviders: { type: array, items: { type: string, enum: [openai,grok,genspark,manus] } }
+                realign:
+                  type: object
+                  properties:
+                    mode: { type: string, enum: [switch,same,both], default: both }
+                    revisedInput: { type: object }
+                    maxSame: { type: integer, default: 1 }
+                providers:
+                  type: object
+                  properties:
+                    openai: { type: object, properties: { apiKey: { type: string } } }
+                    grok: { type: object, properties: { apiKey: { type: string }, baseUrl: { type: string } } }
+                    genspark: { type: object, properties: { apiKey: { type: string }, baseUrl: { type: string } } }
+                    manus: { type: object, properties: { apiKey: { type: string }, baseUrl: { type: string } } }
+                    replicate: { type: object, properties: { apiToken: { type: string }, baseUrl: { type: string } } }
+      responses: { "200": { description: OK } }
+
+  /api/orch/auto/run:
+    post:
+      operationId: autoRunPlano
+      summary: Sequência de passos com realinhamento e fallback
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [demandId, plan, providers]
+              properties:
+                demandId: { type: string }
+                plan:
+                  type: array
+                  items:
+                    type: object
+                    required: [title, kind, input]
+                    properties:
+                      title: { type: string }
+                      kind: { type: string, enum: [research,code,browser-test,doc,presentation,cost-review,plan-review,image,video,ops,summary] }
+                      input: { type: object }
+                      acceptance:
+                        type: object
+                        properties:
+                          mustInclude: { type: array, items: { type: string } }
+                          maxTokens: { type: integer }
+                      routeHint: { type: string }
+                      fallbackProviders: { type: array, items: { type: string, enum: [openai,grok,genspark,manus] } }
+                      realign:
+                        type: object
+                        properties:
+                          mode: { type: string, enum: [switch,same,both], default: both }
+                          revisedInput: { type: object }
+                          maxSame: { type: integer, default: 1 }
+                providers:
+                  type: object
+                  properties:
+                    openai: { type: object, properties: { apiKey: { type: string } } }
+                    grok: { type: object, properties: { apiKey: { type: string }, baseUrl: { type: string } } }
+                    genspark: { type: object, properties: { apiKey: { type: string }, baseUrl: { type: string } } }
+                    manus: { type: object, properties: { apiKey: { type: string }, baseUrl: { type: string } } }
+                maxSwitches: { type: integer, default: 3 }
+      responses: { "200": { description: OK } }
+
+  /api/orch/fanout:
+    post:
+      operationId: fanout
+      summary: Executa ramos em paralelo e consolida
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [demandId, title, branches, providers]
+              properties:
+                demandId: { type: string }
+                title: { type: string }
+                branches:
+                  type: array
+                  items:
+                    type: object
+                    required: [title, kind, input]
+                    properties:
+                      title: { type: string }
+                      kind: { type: string, enum: [research,code,browser-test,doc,presentation,cost-review,plan-review,image,video,ops,summary] }
+                      input: { type: object }
+                      provider: { type: string, enum: [openai,grok,genspark,manus] }
+                      routeHint: { type: string }
+                      acceptance:
+                        type: object
+                        properties:
+                          mustInclude: { type: array, items: { type: string } }
+                          maxTokens: { type: integer }
+                consolidate:
+                  type: object
+                  properties:
+                    enabled: { type: boolean, default: true }
+                    provider: { type: string, enum: [openai,grok,genspark,manus] }
+                    routeHint: { type: string }
+                    acceptance:
+                      type: object
+                      properties:
+                        mustInclude: { type: array, items: { type: string } }
+                        maxTokens: { type: integer }
+                    instructions: { type: string }
+                providers:
+                  type: object
+                  properties:
+                    openai: { type: object, properties: { apiKey: { type: string } } }
+                    grok: { type: object, properties: { apiKey: { type: string }, baseUrl: { type: string } } }
+                    genspark: { type: object, properties: { apiKey: { type: string }, baseUrl: { type: string } } }
+                    manus: { type: object, properties: { apiKey: { type: string }, baseUrl: { type: string } } }
+      responses: { "200": { description: OK } }
+
+  /api/orch/cross-review:
+    post:
+      operationId: crossReview
+      summary: Encaminha saída de uma IA para revisão por outras IAs em cadeia
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [demandId, title, producer, reviewers, providers]
+              properties:
+                demandId: { type: string }
+                title: { type: string }
+                producer:
+                  type: object
+                  required: [title, kind, input]
+                  properties:
+                    title: { type: string }
+                    kind: { type: string, enum: [research,code,browser-test,doc,presentation,cost-review,plan-review,image,video,ops,summary] }
+                    input: { type: object }
+                    provider: { type: string, enum: [openai,grok,genspark,manus] }
+                    routeHint: { type: string }
+                    acceptance:
+                      type: object
+                      properties:
+                        mustInclude: { type: array, items: { type: string } }
+                        maxTokens: { type: integer }
+                reviewers:
+                  type: array
+                  items:
+                    type: object
+                    required: [title]
+                    properties:
+                      title: { type: string }
+                      kind: { type: string, enum: [research,code,browser-test,doc,presentation,cost-review,plan-review,image,video,ops,summary] }
+                      instruction: { type: string }
+                      provider: { type: string, enum: [openai,grok,genspark,manus] }
+                      routeHint: { type: string }
+                      acceptance:
+                        type: object
+                        properties:
+                          mustInclude: { type: array, items: { type: string } }
+                          maxTokens: { type: integer }
+                iterations: { type: integer, default: 1 }
+                providers:
+                  type: object
+                  properties:
+                    openai: { type: object, properties: { apiKey: { type: string } } }
+                    grok: { type: object, properties: { apiKey: { type: string }, baseUrl: { type: string } } }
+                    genspark: { type: object, properties: { apiKey: { type: string }, baseUrl: { type: string } } }
+                    manus: { type: object, properties: { apiKey: { type: string }, baseUrl: { type: string } } }
+      responses: { "200": { description: OK } }
+
+  /api/integrations/save-doc:
+    post:
+      operationId: salvarDocumento
+      summary: Salva/atualiza arquivo de texto em GitLab/GitHub/Google Drive
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [demandId, target, path, content, tokens]
+              properties:
+                demandId: { type: string }
+                target: { type: string, enum: [gitlab,github,gdrive] }
+                path: { type: string, example: "docs/RESUMO.md" }
+                content: { type: string }
+                message: { type: string }
+                tokens:
+                  type: object
+                  properties:
+                    gitlab: { type: object, properties: { token: { type: string }, projectId: { type: string } } }
+                    github: { type: object, properties: { token: { type: string }, ownerRepo: { type: string } } }
+                    gdrive: { type: object, properties: { token: { type: string }, parentId: { type: string } } }
+      responses: { "200": { description: OK } }
+
+  /api/files/put-b64:
+    post:
+      operationId: salvarArquivoBase64
+      summary: Salva arquivo binário base64 no repositório e retorna URL canônica
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [target, path, base64, tokens]
+              properties:
+                target: { type: string, enum: [gitlab,github] }
+                path: { type: string, example: "demands/slug/v001/assets/img1.png" }
+                base64: { type: string }
+                contentType: { type: string }
+                message: { type: string, default: "asset upload" }
+                tokens:
+                  type: object
+                  properties:
+                    gitlab: { type: object, properties: { token: { type: string }, projectId: { type: string } } }
+                    github: { type: object, properties: { token: { type: string }, ownerRepo: { type: string } } }
+      responses: { "200": { description: OK } }
+
+  /api/repo/ensure-structure:
+    post:
+      operationId: criarEstruturaRepositorio
+      summary: Cria/garante estrutura de conhecimento global e demanda versionada
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [target, tokens, demandTitle]
+              properties:
+                target: { type: string, enum: [gitlab,github] }
+                tokens:
+                  type: object
+                  properties:
+                    gitlab: { type: object, properties: { token: { type: string }, projectId: { type: string } } }
+                    github: { type: object, properties: { token: { type: string }, ownerRepo: { type: string } } }
+                demandTitle: { type: string, example: "Projeto Exemplo" }
+                version: { type: string, example: "v001", pattern: "^v\\d{3}$", default: "v001" }
+      responses: { "200": { description: OK } }
+
+  /api/knowledge/save:
+    post:
+      operationId: salvarConhecimento
+      summary: Salva nota de conhecimento em escopo global ou de demanda
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [target, tokens, scope, relPath, content]
+              properties:
+                target: { type: string, enum: [gitlab,github] }
+                tokens:
+                  type: object
+                  properties:
+                    gitlab: { type: object, properties: { token: { type: string }, projectId: { type: string } } }
+                    github: { type: object, properties: { token: { type: string }, ownerRepo: { type: string } } }
+                scope:
+                  type: object
+                  required: [kind]
+                  properties:
+                    kind: { type: string, enum: [global,demand] }
+                    demandSlug: { type: string }
+                    version: { type: string }
+                relPath: { type: string, example: "notes/decisao-001.md" }
+                content: { type: string }
+                message: { type: string, default: "save knowledge" }
+      responses: { "200": { description: OK } }
+
+  /api/integrations/webhook:
+    post:
+      operationId: chamarWebhook
+      summary: Dispara webhook (VPS/runner/CI)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [url]
+              properties:
+                url: { type: string }
+                secret: { type: string }
+                payload: { type: object }
+      responses: { "200": { description: OK } }
+
+  /privacy:
+    get:
+      operationId: privacy
+      summary: Política de Privacidade
+      responses: { "200": { description: OK } }
+
+  /terms:
+    get:
+      operationId: terms
+      summary: Termos de Uso
+      responses: { "200": { description: OK } }
