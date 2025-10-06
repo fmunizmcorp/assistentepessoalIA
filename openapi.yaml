@@ -3,7 +3,7 @@ info:
   title: Orquestrador de IAs
   version: "1.2.0"
 servers:
-  - url: https://assistentepessoalia.onrender.com
+  - url: https://assistentepessoalia-zmu0.onrender.com
 paths:
   /api/health:
     get:
