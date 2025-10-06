@@ -481,6 +481,20 @@ app.post("/api/credentials/get", async (req,res)=>{
   catch{ res.status(400).json({ error:"passphrase inválida" }); }
 });
 
+// POST /api/integrations/webhook
+app.post("/api/integrations/webhook", async (req, res) => {
+  const schema = z.object({
+    url: z.string().url(),
+    method: z.enum(["GET","POST","PUT","PATCH","DELETE"]).default("POST"),
+    headers: z.record(z.string()).optional(),
+    body: z.any().optional()
+  });
+  const p = schema.parse(req.body);
+  const r = await axios({ url: p.url, method: p.method, headers: p.headers, data: p.body });
+  res.json({ ok: true, status: r.status, data: r.data });
+});
+
+
 // -------- termos / privacidade --------
 app.get("/privacy", (_req,res)=>res.type("text/html").send(`<!doctype html><meta charset="utf-8"><title>Política de Privacidade</title><h1>Política de Privacidade</h1><p>Contato: <a href="mailto:fmunizm@gmail.com">fmunizm@gmail.com</a></p><p>Persistência ocorre nos repositórios/Drives indicados por você. Credenciais podem ser salvas cifradas (AES) no seu repositório, sob sua decisão.</p>`));
 app.get("/terms", (_req,res)=>res.type("text/html").send(`<!doctype html><meta charset="utf-8"><title>Termos de Uso</title><h1>Termos de Uso</h1><p>Contato: <a href="mailto:fmunizm@gmail.com">fmunizm@gmail.com</a></p><ol><li>Serviço "como está".</li><li>Você controla repositórios, integrações e retenção.</li><li>Valide antes de uso crítico.</li></ol>`));
