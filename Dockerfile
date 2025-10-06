@@ -1,7 +1,8 @@
-FROM node:20-alpine
+FROM node:20-bullseye
 WORKDIR /app
-COPY package.json package-lock.json* ./
-RUN npm ci --omit=dev || npm i --omit=dev
+COPY package.json ./
+RUN npm i --omit=dev
 COPY . .
-EXPOSE 3000
-CMD ["node","server.js"]
+ENV NODE_ENV=production
+EXPOSE 8080
+CMD ["npm","start"]
