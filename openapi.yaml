@@ -1,13 +1,25 @@
 openapi: 3.1.0
 jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
-info: { title: AI Orchestrator Actions, version: "1.5.0" }
+info:
+  title: AI Orchestrator Actions
+  version: "1.5.1"
 servers:
-  - url: https://assistentepessoalia.onrender.com
+  - url: https://assistentepessoalia-zmu0.onrender.com
+
 paths:
   /api/health:
-    get: { operationId: health, summary: Health, responses: { "200": { description: OK } } }
+    get:
+      operationId: health
+      summary: Health
+      responses:
+        "200": { description: OK }
+
   /health:
-    get: { operationId: healthCompat, summary: Health compat, responses: { "200": { description: OK } } }
+    get:
+      operationId: healthCompat
+      summary: Health compat
+      responses:
+        "200": { description: OK }
 
   /api/repo/ensure-structure:
     post:
@@ -15,9 +27,17 @@ paths:
       security: [{ ApiKeyAuth: [] }]
       requestBody:
         required: true
-        content: { application/json: { schema:
-          { type: object, required: [scope], properties:
-            { scope: { type: string, enum: [global, demand] }, demandSlug: { type: string }, version: { type: integer, minimum: 1 }, title: { type: string }, dryRun: { type: boolean } } } } }
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [scope]
+              properties:
+                scope: { type: string, enum: [global, demand] }
+                demandSlug: { type: string }
+                version: { type: integer, minimum: 1 }
+                title: { type: string }
+                dryRun: { type: boolean }
       responses: { "200": { description: OK } }
 
   /api/demand/init:
@@ -26,9 +46,16 @@ paths:
       security: [{ ApiKeyAuth: [] }]
       requestBody:
         required: true
-        content: { application/json: { schema:
-          { type: object, required: [slug], properties:
-            { slug: { type: string }, title: { type: string }, version: { type: integer, minimum: 1, default: 1 }, dryRun: { type: boolean } } } } }
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [slug]
+              properties:
+                slug: { type: string }
+                title: { type: string }
+                version: { type: integer, minimum: 1, default: 1 }
+                dryRun: { type: boolean }
       responses: { "200": { description: OK } }
 
   /api/knowledge/save:
@@ -37,10 +64,18 @@ paths:
       security: [{ ApiKeyAuth: [] }]
       requestBody:
         required: true
-        content: { application/json: { schema:
-          { type: object, required: [scope, filename, content], properties:
-            { scope: { type: string, enum: [global, demand] }, demandSlug: { type: string }, version: { type: integer, minimum: 1 },
-              filename: { type: string }, content: {}, area: { type: string, enum: [notes, inputs, outputs], default: notes } } } } }
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [scope, filename, content]
+              properties:
+                scope: { type: string, enum: [global, demand] }
+                demandSlug: { type: string }
+                version: { type: integer, minimum: 1 }
+                filename: { type: string }
+                content: {}
+                area: { type: string, enum: [notes, inputs, outputs], default: notes }
       responses: { "200": { description: OK } }
 
   /api/file/save-base64:
@@ -49,16 +84,28 @@ paths:
       security: [{ ApiKeyAuth: [] }]
       requestBody:
         required: true
-        content: { application/json: { schema:
-          { type: object, required: [scope, filename, base64], properties:
-            { scope: { type: string, enum: [global, demand] }, demandSlug: { type: string }, version: { type: integer, minimum: 1 },
-              area: { type: string, enum: [inputs, outputs], default: inputs }, filename: { type: string }, base64: { type: string } } } } }
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [scope, filename, base64]
+              properties:
+                scope: { type: string, enum: [global, demand] }
+                demandSlug: { type: string }
+                version: { type: integer, minimum: 1 }
+                area: { type: string, enum: [inputs, outputs], default: inputs }
+                filename: { type: string }
+                base64: { type: string }
       responses: { "200": { description: OK } }
 
   /api/url/canonicalize:
     get:
       operationId: canonicalize
-      parameters: [ { in: query, name: path, required: true, schema: { type: string } } ]
+      parameters:
+        - in: query
+          name: path
+          required: true
+          schema: { type: string }
       responses: { "200": { description: OK } }
 
   /api/orch/demand/new:
@@ -67,21 +114,39 @@ paths:
       security: [{ ApiKeyAuth: [] }]
       requestBody:
         required: true
-        content: { application/json: { schema:
-          { type: object, required: [title], properties:
-            { title: { type: string }, description: { type: string }, tags: { type: array, items: { type: string } },
-              owner: { type: string }, repoTarget: { type: object, properties:
-                { kind: { type: string, enum: [gitlab, github, none], default: none }, projectId: { type: string }, ownerRepo: { type: string } } } } } } }
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title]
+              properties:
+                title: { type: string }
+                description: { type: string }
+                tags: { type: array, items: { type: string } }
+                owner: { type: string }
+                repoTarget:
+                  type: object
+                  properties:
+                    kind: { type: string, enum: [gitlab, github, none], default: none }
+                    projectId: { type: string }
+                    ownerRepo: { type: string }
       responses: { "200": { description: OK } }
 
   /api/orch/demand:
-    get: { operationId: listarDemandas, security: [{ ApiKeyAuth: [] }], responses: { "200": { description: OK } } }
+    get:
+      operationId: listarDemandas
+      security: [{ ApiKeyAuth: [] }]
+      responses: { "200": { description: OK } }
 
   /api/orch/demand/{id}:
     get:
       operationId: lerDemanda
       security: [{ ApiKeyAuth: [] }]
-      parameters: [ { in: path, name: id, required: true, schema: { type: string } } ]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
       responses: { "200": { description: OK } }
 
   /api/orch/prompt/compose:
@@ -90,11 +155,22 @@ paths:
       security: [{ ApiKeyAuth: [] }]
       requestBody:
         required: true
-        content: { application/json: { schema:
-          { type: object, required: [taskType], properties:
-            { taskType: { type: string, enum: [doc,presentation,cost-review,plan-review,code,browser-test,image,video,summary] },
-              context: { type: object }, constraints: { type: object }, style: { type: object },
-              outputFormat: { type: string, enum: [markdown,json,ppt-md,plan-md,prompt], default: markdown } } } } }
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [taskType]
+              properties:
+                taskType:
+                  type: string
+                  enum: [doc, presentation, cost-review, plan-review, code, browser-test, image, video, summary]
+                context: { type: object }
+                constraints: { type: object }
+                style: { type: object }
+                outputFormat:
+                  type: string
+                  enum: [markdown, json, ppt-md, plan-md, prompt]
+                  default: markdown
       responses: { "200": { description: OK } }
 
   /api/orch/step/append:
@@ -103,16 +179,37 @@ paths:
       security: [{ ApiKeyAuth: [] }]
       requestBody:
         required: true
-        content: { application/json: { schema:
-          { type: object, required: [demandId, title, kind, input], properties:
-            { demandId: { type: string }, title: { type: string },
-              kind: { type: string, enum: [research,code,browser-test,doc,presentation,cost-review,plan-review,image,video,ops,summary] },
-              input: { type: object },
-              acceptance: { type: object, properties: { mustInclude: { type: array, items: { type: string } }, maxTokens: { type: integer } } },
-              routeHint: { type: string, enum: [cheap,balanced,best,force-openai,force-grok,force-genspark,force-manus], default: balanced },
-              fallbackProviders: { type: array, items: { type: string, enum: [openai,grok,genspark,manus] } },
-              realign: { type: object, properties: { mode: { type: string, enum: [switch,same,both], default: both }, revisedInput: { type: object }, maxSame: { type: integer, default: 1 } } },
-              providers: { type: object } } } } }
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [demandId, title, kind, input]
+              properties:
+                demandId: { type: string }
+                title: { type: string }
+                kind:
+                  type: string
+                  enum: [research, code, browser-test, doc, presentation, cost-review, plan-review, image, video, ops, summary]
+                input: { type: object }
+                acceptance:
+                  type: object
+                  properties:
+                    mustInclude: { type: array, items: { type: string } }
+                    maxTokens: { type: integer }
+                routeHint:
+                  type: string
+                  enum: [cheap, balanced, best, force-openai, force-grok, force-genspark, force-manus]
+                  default: balanced
+                fallbackProviders:
+                  type: array
+                  items: { type: string, enum: [openai, grok, genspark, manus] }
+                realign:
+                  type: object
+                  properties:
+                    mode: { type: string, enum: [switch, same, both], default: both }
+                    revisedInput: { type: object }
+                    maxSame: { type: integer, default: 1 }
+                providers: { type: object }
       responses: { "200": { description: OK } }
 
   /api/orch/auto/run:
@@ -121,7 +218,43 @@ paths:
       security: [{ ApiKeyAuth: [] }]
       requestBody:
         required: true
-        content: { application/json: { schema: { type: object, required: [demandId, plan, providers] } } }
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [demandId, plan, providers]
+              properties:
+                demandId: { type: string }
+                plan:
+                  type: array
+                  items:
+                    type: object
+                    required: [title, kind, input]
+                    properties:
+                      title: { type: string }
+                      kind:
+                        type: string
+                        enum: [research, code, browser-test, doc, presentation, cost-review, plan-review, image, video, ops, summary]
+                      input: { type: object }
+                      acceptance:
+                        type: object
+                        properties:
+                          mustInclude: { type: array, items: { type: string } }
+                          maxTokens: { type: integer }
+                      routeHint:
+                        type: string
+                        enum: [cheap, balanced, best, force-openai, force-grok, force-genspark, force-manus]
+                      fallbackProviders:
+                        type: array
+                        items: { type: string, enum: [openai, grok, genspark, manus] }
+                      realign:
+                        type: object
+                        properties:
+                          mode: { type: string, enum: [switch, same, both] }
+                          revisedInput: { type: object }
+                          maxSame: { type: integer }
+                providers: { type: object }
+                maxSwitches: { type: integer, minimum: 0, maximum: 10, default: 3 }
       responses: { "200": { description: OK } }
 
   /api/orch/fanout:
@@ -130,7 +263,50 @@ paths:
       security: [{ ApiKeyAuth: [] }]
       requestBody:
         required: true
-        content: { application/json: { schema: { type: object, required: [demandId, title, branches, providers] } } }
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [demandId, title, branches, providers]
+              properties:
+                demandId: { type: string }
+                title: { type: string }
+                branches:
+                  type: array
+                  minItems: 2
+                  items:
+                    type: object
+                    required: [title, kind, input]
+                    properties:
+                      title: { type: string }
+                      kind:
+                        type: string
+                        enum: [research, code, browser-test, doc, presentation, cost-review, plan-review, image, video, ops, summary]
+                      input: { type: object }
+                      provider: { type: string, enum: [openai, grok, genspark, manus] }
+                      routeHint:
+                        type: string
+                        enum: [cheap, balanced, best, force-openai, force-grok, force-genspark, force-manus]
+                      acceptance:
+                        type: object
+                        properties:
+                          mustInclude: { type: array, items: { type: string } }
+                          maxTokens: { type: integer }
+                consolidate:
+                  type: object
+                  properties:
+                    enabled: { type: boolean, default: true }
+                    provider: { type: string, enum: [openai, grok, genspark, manus] }
+                    routeHint:
+                      type: string
+                      enum: [cheap, balanced, best, force-openai, force-grok, force-genspark, force-manus]
+                    acceptance:
+                      type: object
+                      properties:
+                        mustInclude: { type: array, items: { type: string } }
+                        maxTokens: { type: integer }
+                    instructions: { type: string }
+                providers: { type: object }
       responses: { "200": { description: OK } }
 
   /api/orch/cross-review:
@@ -139,7 +315,54 @@ paths:
       security: [{ ApiKeyAuth: [] }]
       requestBody:
         required: true
-        content: { application/json: { schema: { type: object, required: [demandId, title, producer, reviewers, providers] } } }
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [demandId, title, producer, reviewers, providers]
+              properties:
+                demandId: { type: string }
+                title: { type: string }
+                producer:
+                  type: object
+                  required: [title, kind, input]
+                  properties:
+                    title: { type: string }
+                    kind:
+                      type: string
+                      enum: [research, code, browser-test, doc, presentation, cost-review, plan-review, image, video, ops, summary]
+                    input: { type: object }
+                    provider: { type: string, enum: [openai, grok, genspark, manus] }
+                    routeHint:
+                      type: string
+                      enum: [cheap, balanced, best, force-openai, force-grok, force-genspark, force-manus]
+                    acceptance:
+                      type: object
+                      properties:
+                        mustInclude: { type: array, items: { type: string } }
+                        maxTokens: { type: integer }
+                reviewers:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: object
+                    properties:
+                      title: { type: string }
+                      kind:
+                        type: string
+                        enum: [research, code, browser-test, doc, presentation, cost-review, plan-review, image, video, ops, summary]
+                      instruction: { type: string }
+                      provider: { type: string, enum: [openai, grok, genspark, manus] }
+                      routeHint:
+                        type: string
+                        enum: [cheap, balanced, best, force-openai, force-grok, force-genspark, force-manus]
+                      acceptance:
+                        type: object
+                        properties:
+                          mustInclude: { type: array, items: { type: string } }
+                          maxTokens: { type: integer }
+                iterations: { type: integer, minimum: 1, maximum: 5, default: 1 }
+                providers: { type: object }
       responses: { "200": { description: OK } }
 
   /api/integrations/save-doc:
@@ -148,7 +371,35 @@ paths:
       security: [{ ApiKeyAuth: [] }]
       requestBody:
         required: true
-        content: { application/json: { schema: { type: object, required: [demandId, target, path, content, tokens] } } }
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [demandId, target, path, content, tokens]
+              properties:
+                demandId: { type: string }
+                target: { type: string, enum: [gitlab, github, gdrive] }
+                path: { type: string }
+                content: { type: string }
+                message: { type: string, default: "update from ai-orchestrator" }
+                tokens:
+                  type: object
+                  properties:
+                    gitlab:
+                      type: object
+                      properties:
+                        token: { type: string }
+                        projectId: { type: string }
+                    github:
+                      type: object
+                      properties:
+                        token: { type: string }
+                        ownerRepo: { type: string }
+                    gdrive:
+                      type: object
+                      properties:
+                        token: { type: string }
+                        parentId: { type: string }
       responses: { "200": { description: OK } }
 
   /api/integrations/webhook:
@@ -157,7 +408,16 @@ paths:
       security: [{ ApiKeyAuth: [] }]
       requestBody:
         required: true
-        content: { application/json: { schema: { type: object, required: [url] } } }
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [url]
+              properties:
+                url: { type: string }
+                method: { type: string, enum: [GET, POST, PUT, PATCH, DELETE], default: POST }
+                headers: { type: object, additionalProperties: { type: string } }
+                body: {}
       responses: { "200": { description: OK } }
 
   /api/credentials/put:
@@ -166,7 +426,29 @@ paths:
       security: [{ ApiKeyAuth: [] }]
       requestBody:
         required: true
-        content: { application/json: { schema: { type: object, required: [passphrase, secrets, target, path, tokens] } } }
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [passphrase, secrets, target, path, tokens]
+              properties:
+                passphrase: { type: string, minLength: 6 }
+                secrets: { type: object }
+                target: { type: string, enum: [gitlab, github], default: github }
+                path: { type: string, default: secrets/providers.enc }
+                tokens:
+                  type: object
+                  properties:
+                    gitlab:
+                      type: object
+                      properties:
+                        token: { type: string }
+                        projectId: { type: string }
+                    github:
+                      type: object
+                      properties:
+                        token: { type: string }
+                        ownerRepo: { type: string }
       responses: { "200": { description: OK } }
 
   /api/credentials/get:
@@ -175,15 +457,40 @@ paths:
       security: [{ ApiKeyAuth: [] }]
       requestBody:
         required: true
-        content: { application/json: { schema: { type: object, required: [passphrase, target, path, tokens] } } }
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [passphrase, target, path, tokens]
+              properties:
+                passphrase: { type: string, minLength: 6 }
+                target: { type: string, enum: [gitlab, github], default: github }
+                path: { type: string, default: secrets/providers.enc }
+                tokens:
+                  type: object
+                  properties:
+                    gitlab:
+                      type: object
+                      properties:
+                        token: { type: string }
+                        projectId: { type: string }
+                    github:
+                      type: object
+                      properties:
+                        token: { type: string }
+                        ownerRepo: { type: string }
       responses: { "200": { description: OK } }
 
   /privacy:
     get: { operationId: privacy, responses: { "200": { description: OK } } }
+
   /terms:
     get: { operationId: terms, responses: { "200": { description: OK } } }
 
 components:
   securitySchemes:
-    ApiKeyAuth: { type: apiKey, in: header, name: x-api-key }
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key
   schemas: {}
