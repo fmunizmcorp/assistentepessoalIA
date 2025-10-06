@@ -18,7 +18,7 @@ app.use(rateLimit({ windowMs: 60_000, max: 60 }));
 
 // ---------- Allowed Domains ----------
 const DEFAULT_ALLOWED = [
-  "https://assistentepessoalia.onrender.com"
+  "https://assistentepessoalia-zmu0.onrender.com"
 ];
 const ALLOWED = (process.env.ALLOWED_ORIGINS || "")
   .split(",")
