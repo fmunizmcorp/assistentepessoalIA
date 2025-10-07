@@ -3,7 +3,7 @@ info:
   title: Orchestrator + Browser Runner API
   version: 1.0.0
 servers:
-  - url: https://SEU-DOMINIO-ORCH
+  - url: https://assistentepessoalia.onrender.com
 paths:
   /health:
     get:
